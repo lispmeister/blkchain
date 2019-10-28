@@ -396,7 +396,7 @@ func (w *PGWriter) pgBlockWorker(ch <-chan *blockRecSync, wg *sync.WaitGroup, fi
 func pgBlockWriter(c chan *blockRecSync, db *sql.DB) {
 	defer writerWg.Done()
 
-	cols := []string{"id", "height", "hash", "version", "prevhash", "merkleroot", "time", "bits", "nonce", "orphan", "size", "base_size", "weight", "virt_size"}
+	cols := []string{"id", "height", "hash", "version", "prevhash", "merkleroot", "time", "bits", "nonce", "orphan", "size", "base_size", "weight", "virt_size", "timestamp"}
 
 	txn, stmt, err := begin(db, "blocks", cols)
 	if err != nil {
@@ -435,6 +435,7 @@ func pgBlockWriter(c chan *blockRecSync, db *sql.DB) {
 			br.BaseSize(),
 			br.Weight(),
 			br.VirtualSize(),
+			toTimestamp(int64(b.Time)),
 		)
 		if err != nil {
 			log.Printf("ERROR (3): %v", err)
@@ -868,7 +869,10 @@ func createTables(db *sql.DB) error {
   ,base_size    INT NOT NULL
   ,weight       INT NOT NULL
   ,virt_size    INT NOT NULL
+	,timestamp		TIMESTAMP WITHOUT TIME ZONE NOT NULL
   );
+
+	SELECT create_hypertable('blocks', 'timestamp');
 
   CREATE TABLE txs (
    id            BIGINT NOT NULL
@@ -1377,4 +1381,9 @@ ORDER BY t.id;
 		cache.add(hash, txid, cnt)
 	}
 	return nil
+}
+
+func toTimestamp(t int64) time.Time {
+	unixTimeUTC := time.Unix(t, 0) // convert from Unix timestamp to UTC
+	return unixTimeUTC
 }
