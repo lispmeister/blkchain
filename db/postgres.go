@@ -869,10 +869,10 @@ func createTables(db *sql.DB) error {
   ,base_size    INT NOT NULL
   ,weight       INT NOT NULL
   ,virt_size    INT NOT NULL
-	,timestamp		TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  ,timestamp    TIMESTAMP WITHOUT TIME ZONE NOT NULL
   );
 
-	SELECT create_hypertable('blocks', 'timestamp');
+  SELECT create_hypertable('blocks', 'timestamp');
 
   CREATE TABLE txs (
    id            BIGINT NOT NULL
