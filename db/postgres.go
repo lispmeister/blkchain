@@ -928,7 +928,7 @@ func createIndexes1(db *sql.DB, verbose bool) error {
        BEGIN
          IF NOT EXISTS (SELECT constraint_name FROM information_schema.constraint_column_usage
                          WHERE table_name = 'blocks' AND constraint_name = 'blocks_pkey') THEN
-            ALTER TABLE blocks ADD CONSTRAINT blocks_pkey PRIMARY KEY(id);
+            ALTER TABLE blocks ADD CONSTRAINT blocks_pkey PRIMARY KEY("timestamp", id);
          END IF;
        END
        $$;`); err != nil {
@@ -943,7 +943,7 @@ func createIndexes1(db *sql.DB, verbose bool) error {
 	if verbose {
 		log.Printf("  - blocks hash index...")
 	}
-	if _, err := db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS blocks_hash_idx ON blocks(hash);"); err != nil {
+	if _, err := db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS blocks_hash_idx ON blocks("timestamp", hash);`); err != nil {
 		return err
 	}
 	if verbose {
